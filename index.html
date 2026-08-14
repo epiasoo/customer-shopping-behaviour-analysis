@@ -1,0 +1,1497 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Customer Shopping Behaviour - Analytics Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy: #0f2a47;
+        --navy-2: #1f3a5f;
+        --teal: #2a9d8f;
+        --sand: #e9c46a;
+        --coral: #e76f51;
+        --sky: #8ab6d6;
+        --slate: #6d6875;
+        --canvas: #eef1f5;
+        --card: #ffffff;
+        --ink: #12202f;
+        --muted: #66788c;
+        --line: #dce3eb;
+        --radius: 10px;
+        --shadow:
+          0 1px 2px rgba(15, 42, 71, 0.06), 0 8px 24px rgba(15, 42, 71, 0.06);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--canvas);
+        color: var(--ink);
+        font-family:
+          Inter,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1,
+      h2,
+      h3,
+      .display {
+        font-family: "Space Grotesk", Inter, sans-serif;
+        letter-spacing: -0.01em;
+      }
+      .mono {
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      /* ---------- shell ---------- */
+      .shell {
+        display: grid;
+        grid-template-columns: 236px 1fr;
+        min-height: 100vh;
+      }
+      .rail {
+        background: var(--navy);
+        color: #fff;
+        padding: 22px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+      .brand {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .brand span {
+        display: block;
+        font-size: 11px;
+        font-weight: 400;
+        color: #9db4cc;
+        margin-top: 5px;
+        letter-spacing: 0.02em;
+      }
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .nav button {
+        all: unset;
+        cursor: pointer;
+        padding: 9px 11px;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #c3d3e3;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .nav button:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: #fff;
+      }
+      .nav button[aria-current="true"] {
+        background: var(--teal);
+        color: #fff;
+        font-weight: 600;
+      }
+      .nav button:focus-visible {
+        outline: 2px solid var(--sand);
+        outline-offset: 2px;
+      }
+      .nav .idx {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        opacity: 0.7;
+      }
+
+      .filters {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+        margin-top: auto;
+      }
+      .filters h4 {
+        margin: 0 0 2px;
+        font-size: 10px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: #8fa8c0;
+        font-weight: 600;
+      }
+      .filters label {
+        display: block;
+        font-size: 11px;
+        color: #9db4cc;
+        margin-bottom: 4px;
+      }
+      .filters select {
+        width: 100%;
+        background: #ffffff;
+        color: var(--ink);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 7px;
+        padding: 7px 8px;
+        font-size: 12.5px;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='11' height='7'><path d='M1 1l4.5 4.5L10 1' stroke='%2366788C' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 9px center;
+        padding-right: 26px;
+      }
+
+      .filters select option {
+        background: #ffffff;
+        color: #12202f;
+      }
+      .filters select:hover {
+        border-color: var(--teal);
+      }
+      .filters select:focus-visible {
+        outline: 2px solid var(--sand);
+        outline-offset: 1px;
+      }
+      .reset {
+        all: unset;
+        cursor: pointer;
+        text-align: center;
+        font-size: 11.5px;
+        color: #9db4cc;
+        padding: 7px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 7px;
+      }
+      .reset:hover {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .main {
+        padding: 24px 28px 44px;
+        max-width: 1360px;
+      }
+      .page-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      .page-head h1 {
+        margin: 0;
+        font-size: 23px;
+      }
+      .page-head p {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        max-width: 62ch;
+      }
+      .scope {
+        font-size: 11.5px;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid var(--line);
+        padding: 6px 11px;
+        border-radius: 100px;
+        white-space: nowrap;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+        animation: fade 0.28s ease;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ---------- cards ---------- */
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+      .kpis {
+        grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+        margin-bottom: 16px;
+      }
+      .cols-2 {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      }
+      .cols-3 {
+        grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 15px 17px;
+        box-shadow: var(--shadow);
+      }
+      .card h3 {
+        margin: 0 0 2px;
+        font-size: 13.5px;
+      }
+      .card .sub {
+        margin: 0 0 13px;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .kpi .label {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .kpi .value {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        margin-top: 5px;
+        color: var(--navy);
+      }
+      .kpi .foot {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      /* ---------- signature: the cadence pair ---------- */
+      .signature {
+        background: linear-gradient(
+          135deg,
+          var(--navy) 0%,
+          #16385c 58%,
+          #1b4a6b 100%
+        );
+        color: #fff;
+        border-radius: var(--radius);
+        padding: 24px 26px;
+        box-shadow: var(--shadow);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 26px;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .signature::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          680px 200px at 88% 12%,
+          rgba(42, 157, 143, 0.3),
+          transparent 62%
+        );
+      }
+      .sig-stat .n {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 52px;
+        font-weight: 700;
+        line-height: 1;
+        position: relative;
+        z-index: 1;
+      }
+      .sig-stat .n.hi {
+        color: var(--sand);
+      }
+      .sig-stat .n.lo {
+        color: var(--sky);
+      }
+      .sig-stat .k {
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #b9cde0;
+        margin-top: 9px;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+      }
+      .sig-stat .d {
+        font-size: 12.5px;
+        color: #94aec6;
+        margin-top: 5px;
+        max-width: 34ch;
+        position: relative;
+        z-index: 1;
+      }
+      .sig-bar {
+        height: 7px;
+        border-radius: 100px;
+        background: rgba(255, 255, 255, 0.16);
+        margin-top: 13px;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+      }
+      .sig-bar i {
+        display: block;
+        height: 100%;
+        border-radius: 100px;
+        transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      /* ---------- charts ---------- */
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      .axis {
+        font-size: 10.5px;
+        fill: var(--muted);
+      }
+      .vlabel {
+        font-size: 10.5px;
+        fill: var(--ink);
+        font-weight: 600;
+        font-family: "IBM Plex Mono", monospace;
+      }
+      .gridline {
+        stroke: var(--line);
+        stroke-width: 1;
+      }
+      .mark {
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .mark:hover {
+        opacity: 0.78;
+      }
+      .mark.dim {
+        opacity: 0.26;
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 9px;
+      }
+      .legend i {
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      /* ---------- table ---------- */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 7px 9px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      th {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      tbody tr:hover {
+        background: #f6f9fc;
+      }
+      td.num {
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      .note {
+        border-left: 3px solid var(--sand);
+        background: #fdf8ec;
+        padding: 13px 15px;
+        border-radius: 0 8px 8px 0;
+        font-size: 12.5px;
+        line-height: 1.62;
+      }
+      .note strong {
+        color: var(--navy);
+      }
+      .tag {
+        display: inline-block;
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 100px;
+        background: #eaf6f4;
+        color: #1f7a6f;
+      }
+      .tag.grey {
+        background: #eef1f5;
+        color: var(--muted);
+      }
+
+      /* ---------- loader ---------- */
+      .loader {
+        max-width: 620px;
+        margin: 64px auto;
+        text-align: center;
+      }
+      .drop {
+        border: 2px dashed var(--line);
+        border-radius: 14px;
+        padding: 38px 26px;
+        background: var(--card);
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+      }
+      .drop.over {
+        border-color: var(--teal);
+        background: #f2faf9;
+      }
+      .drop h2 {
+        margin: 0 0 7px;
+        font-size: 18px;
+      }
+      .drop p {
+        color: var(--muted);
+        margin: 0 auto 18px;
+        max-width: 46ch;
+        font-size: 13px;
+      }
+      .btn {
+        all: unset;
+        cursor: pointer;
+        background: var(--navy);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .btn:hover {
+        background: var(--navy-2);
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--teal);
+        outline-offset: 2px;
+      }
+      .err {
+        color: var(--coral);
+        font-size: 12.5px;
+        margin-top: 13px;
+        min-height: 18px;
+      }
+      .hint {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 20px;
+        line-height: 1.7;
+      }
+      .hint code {
+        background: #e7ecf2;
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 11px;
+      }
+
+      @media (max-width: 900px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+        .rail {
+          flex-direction: column;
+        }
+        .nav {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        .signature {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        .main {
+          padding: 18px 15px 40px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============ loader ============ -->
+    <div id="loader" class="loader">
+      <div class="drop" id="drop">
+        <h2>Load the dataset</h2>
+        <p>
+          Drop <strong>customers_analysis_ready.csv</strong> here, or choose the
+          file. Everything runs in your browser, nothing is uploaded.
+        </p>
+        <button class="btn" id="pick">Choose file</button>
+        <input type="file" id="file" accept=".csv" hidden />
+        <div class="err" id="err"></div>
+      </div>
+    </div>
+
+    <!-- ============ dashboard ============ -->
+    <div class="shell" id="app" hidden>
+      <aside class="rail">
+        <div class="brand">
+          Customer Shopping Behaviour<span>Python · SQL - Ei Phyu</span>
+        </div>
+        <nav class="nav" id="nav">
+          <button data-page="p1" aria-current="true">
+            <span class="idx">01</span> Summary
+          </button>
+          <button data-page="p2"><span class="idx">02</span> Segments</button>
+          <button data-page="p3"><span class="idx">03</span> Engagement</button>
+          <button data-page="p4">
+            <span class="idx">04</span> Product &amp; region
+          </button>
+        </nav>
+        <div class="filters">
+          <h4>Filters</h4>
+          <div>
+            <label for="f-cat">Category</label
+            ><select id="f-cat"></select>
+          </div>
+          <div>
+            <label for="f-seg">Segment</label
+            ><select id="f-seg"></select>
+          </div>
+          <div>
+            <label for="f-sea">Season</label
+            ><select id="f-sea"></select>
+          </div>
+          <div>
+            <label for="f-age">Age band</label
+            ><select id="f-age"></select>
+          </div>
+          <button class="reset" id="reset">Clear all filters</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="page-head">
+          <div>
+            <h1 id="ptitle"></h1>
+            <p id="psub"></p>
+          </div>
+          <div class="scope" id="scope"></div>
+        </div>
+        <section id="p1" class="page active"></section>
+        <section id="p2" class="page"></section>
+        <section id="p3" class="page"></section>
+        <section id="p4" class="page"></section>
+      </main>
+    </div>
+
+    <script>
+      "use strict";
+
+      /* =======================================================================
+   1. Data loading
+   ======================================================================= */
+      const NUMERIC = new Set([
+        "customer_id",
+        "age",
+        "purchase_amount",
+        "review_rating",
+        "previous_purchases",
+        "purchase_frequency_days",
+        "purchases_per_year",
+        "est_annual_value",
+        "segment_id",
+      ]);
+
+      function parseCSV(text) {
+        if (text.charCodeAt(0) === 0xfeff) text = text.slice(1); // strip UTF-8 BOM
+        const firstLine = text.slice(0, text.indexOf("\n"));
+        const DELIM =
+          firstLine.split(";").length > firstLine.split(",").length ? ";" : ",";
+        const rows = [];
+        let row = [],
+          field = "",
+          q = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (q) {
+            if (c === '"') {
+              if (text[i + 1] === '"') {
+                field += '"';
+                i++;
+              } else q = false;
+            } else field += c;
+          } else if (c === '"') {
+            q = true;
+          } else if (c === DELIM) {
+            row.push(field);
+            field = "";
+          } else if (c === "\n") {
+            row.push(field);
+            rows.push(row);
+            row = [];
+            field = "";
+          } else if (c !== "\r") {
+            field += c;
+          }
+        }
+        if (field.length || row.length) {
+          row.push(field);
+          rows.push(row);
+        }
+        const head = rows.shift().map((h) =>
+          h
+            .trim()
+            .replace(/^\uFEFF/, "")
+            .toLowerCase()
+            .replace(/\s+/g, "_"),
+        );
+        return rows
+          .filter((r) => r.length === head.length)
+          .map((r) => {
+            const o = {};
+            head.forEach((h, i) => {
+              let v = r[i];
+              if (NUMERIC.has(h)) {
+                const n = parseFloat(v);
+                o[h] = isNaN(n) ? null : n;
+              } else if (v === "True" || v === "False") {
+                o[h] = v === "True";
+              } else o[h] = v;
+            });
+            return o;
+          });
+      }
+
+      let DATA = [];
+      const REQUIRED = [
+        "category",
+        "season",
+        "segment",
+        "age_band",
+        "purchase_amount",
+        "est_annual_value",
+      ];
+
+      function boot(text) {
+        const err = document.getElementById("err");
+        try {
+          const rows = parseCSV(text);
+          if (!rows.length) throw new Error("The file has no data rows.");
+          const missing = REQUIRED.filter((c) => !(c in rows[0]));
+          if (missing.length)
+            throw new Error(
+              "Missing columns: " +
+                missing.join(", ") +
+                ". This file has: " +
+                Object.keys(rows[0]).join(", ") +
+                ". Load customers_analysis_ready.csv from data/processed.",
+            );
+          DATA = rows;
+          document.getElementById("loader").hidden = true;
+          document.getElementById("app").hidden = false;
+          init();
+        } catch (e) {
+          err.textContent = e.message;
+        }
+      }
+
+      (function wireLoader() {
+        const drop = document.getElementById("drop"),
+          input = document.getElementById("file");
+        document.getElementById("pick").onclick = () => input.click();
+        input.onchange = (e) => {
+          const f = e.target.files[0];
+          if (f) f.text().then(boot);
+        };
+        ["dragenter", "dragover"].forEach((ev) =>
+          drop.addEventListener(ev, (e) => {
+            e.preventDefault();
+            drop.classList.add("over");
+          }),
+        );
+        ["dragleave", "drop"].forEach((ev) =>
+          drop.addEventListener(ev, (e) => {
+            e.preventDefault();
+            drop.classList.remove("over");
+          }),
+        );
+        drop.addEventListener("drop", (e) => {
+          const f = e.dataTransfer.files[0];
+          if (f) f.text().then(boot);
+          else
+            document.getElementById("err").textContent = "That wasn't a file.";
+        });
+        // Auto-load when served over HTTP
+        if (location.protocol.startsWith("http")) {
+          fetch("customers_analysis_ready.csv")
+            .then((r) => (r.ok ? r.text() : Promise.reject()))
+            .then(boot)
+            .catch(() => {});
+        }
+      })();
+
+      /* =======================================================================
+   2. State, helpers
+   ======================================================================= */
+      const F = {
+        category: "All",
+        segment: "All",
+        season: "All",
+        age_band: "All",
+      };
+      let PAGE = "p1";
+
+      const C = {
+        navy: "#1F3A5F",
+        teal: "#2A9D8F",
+        sand: "#E9C46A",
+        coral: "#E76F51",
+        sky: "#8AB6D6",
+        slate: "#6D6875",
+      };
+      const SEASON_ORDER = ["Spring", "Summer", "Fall", "Winter"];
+      const AGE_ORDER = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+
+      const money = (n) => "$" + Math.round(n).toLocaleString();
+      const money2 = (n) =>
+        "$" +
+        n.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      const num = (n) => Math.round(n).toLocaleString();
+      const pct = (n, d = 1) => (n * 100).toFixed(d) + "%";
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+
+      const view = () =>
+        DATA.filter(
+          (r) =>
+            (F.category === "All" || r.category === F.category) &&
+            (F.segment === "All" || r.segment === F.segment) &&
+            (F.season === "All" || r.season === F.season) &&
+            (F.age_band === "All" || r.age_band === F.age_band),
+        );
+
+      const sum = (rs, k) => rs.reduce((a, r) => a + (r[k] || 0), 0);
+      const mean = (rs, k) => (rs.length ? sum(rs, k) / rs.length : 0);
+
+      function groupBy(rows, key) {
+        const m = new Map();
+        rows.forEach((r) => {
+          const k = r[key];
+          if (!m.has(k)) m.set(k, []);
+          m.get(k).push(r);
+        });
+        return m;
+      }
+      function agg(rows, key, metric) {
+        const out = [];
+        groupBy(rows, key).forEach((rs, k) =>
+          out.push({ key: k, value: metric(rs), n: rs.length }),
+        );
+        return out;
+      }
+      const sortDesc = (a) => a.sort((x, y) => y.value - x.value);
+      const sortBy = (a, order) =>
+        a.sort((x, y) => order.indexOf(x.key) - order.indexOf(y.key));
+
+      /* =======================================================================
+   3. Chart primitives (hand-built SVG)
+   ======================================================================= */
+      function barChart(
+        data,
+        {
+          fmt = num,
+          color = C.navy,
+          height = 250,
+          filterKey = null,
+          active = null,
+        } = {},
+      ) {
+        if (!data.length)
+          return `<p class="sub">No rows match these filters.</p>`;
+        const W = 560,
+          H = height,
+          pad = { t: 14, r: 14, b: 34, l: 14 };
+        const max = Math.max(...data.map((d) => d.value)) || 1;
+        const iw = W - pad.l - pad.r,
+          ih = H - pad.t - pad.b;
+        const bw = iw / data.length,
+          gap = Math.min(16, bw * 0.28);
+        const bars = data
+          .map((d, i) => {
+            const h = Math.max(2, (d.value / max) * (ih - 22));
+            const x = pad.l + i * bw + gap / 2,
+              y = pad.t + (ih - h);
+            const dim = active && active !== d.key ? " dim" : "";
+            const click = filterKey
+              ? `onclick="toggleFilter('${filterKey}','${esc(d.key)}')"`
+              : "";
+            return `<g class="mark${dim}" ${click}><title>${esc(d.key)}: ${fmt(d.value)}</title>
+      <rect x="${x}" y="${y}" width="${bw - gap}" height="${h}" rx="4" fill="${color}"/>
+      <text class="vlabel" x="${x + (bw - gap) / 2}" y="${y - 6}" text-anchor="middle">${fmt(d.value)}</text>
+      <text class="axis" x="${x + (bw - gap) / 2}" y="${H - 14}" text-anchor="middle">${esc(d.key)}</text></g>`;
+          })
+          .join("");
+        return `<svg viewBox="0 0 ${W} ${H}" role="img">
+    <line class="gridline" x1="${pad.l}" y1="${pad.t + ih}" x2="${W - pad.r}" y2="${pad.t + ih}"/>${bars}</svg>`;
+      }
+
+      function groupedBars(
+        data,
+        series,
+        { fmt = num, height = 260, order = null } = {},
+      ) {
+        if (!data.length)
+          return `<p class="sub">No rows match these filters.</p>`;
+        if (order) sortBy(data, order);
+        const W = 560,
+          H = height,
+          pad = { t: 16, r: 14, b: 34, l: 14 };
+        const max =
+          Math.max(...data.flatMap((d) => series.map((s) => d[s.key]))) || 1;
+        const iw = W - pad.l - pad.r,
+          ih = H - pad.t - pad.b,
+          gw = iw / data.length,
+          bw = (gw * 0.66) / series.length;
+        const g = data
+          .map((d, i) => {
+            const gx = pad.l + i * gw + gw * 0.17;
+            const rects = series
+              .map((s, j) => {
+                const h = Math.max(2, (d[s.key] / max) * (ih - 20));
+                return `<g class="mark"><title>${esc(d.key)} - ${s.label}: ${fmt(d[s.key])}</title>
+        <rect x="${gx + j * bw}" y="${pad.t + ih - h}" width="${bw - 3}" height="${h}" rx="3" fill="${s.color}"/></g>`;
+              })
+              .join("");
+            return (
+              rects +
+              `<text class="axis" x="${gx + (bw * series.length) / 2}" y="${H - 14}" text-anchor="middle">${esc(d.key)}</text>`
+            );
+          })
+          .join("");
+        return `<svg viewBox="0 0 ${W} ${H}" role="img">
+    <line class="gridline" x1="${pad.l}" y1="${pad.t + ih}" x2="${W - pad.r}" y2="${pad.t + ih}"/>${g}</svg>`;
+      }
+
+      function hBar(
+        data,
+        {
+          fmt = num,
+          color = C.teal,
+          rowH = 25,
+          filterKey = null,
+          active = null,
+        } = {},
+      ) {
+        if (!data.length)
+          return `<p class="sub">No rows match these filters.</p>`;
+        const W = 560,
+          H = data.length * rowH + 12,
+          labelW = 132,
+          valW = 76;
+        const max = Math.max(...data.map((d) => d.value)) || 1;
+        const track = W - labelW - valW - 10;
+        const rows = data
+          .map((d, i) => {
+            const y = i * rowH + 6,
+              w = Math.max(2, (d.value / max) * track);
+            const dim = active && active !== d.key ? " dim" : "";
+            const click = filterKey
+              ? `onclick="toggleFilter('${filterKey}','${esc(d.key)}')"`
+              : "";
+            return `<g class="mark${dim}" ${click}><title>${esc(d.key)}: ${fmt(d.value)}</title>
+      <text class="axis" x="0" y="${y + 13}" fill="#12202F">${esc(d.key)}</text>
+      <rect x="${labelW}" y="${y + 3}" width="${w}" height="${rowH - 11}" rx="3" fill="${color}"/>
+      <text class="vlabel" x="${labelW + w + 7}" y="${y + 13}">${fmt(d.value)}</text></g>`;
+          })
+          .join("");
+        return `<svg viewBox="0 0 ${W} ${H}" role="img">${rows}</svg>`;
+      }
+
+      function donut(
+        data,
+        { fmt = money, filterKey = null, active = null } = {},
+      ) {
+        if (!data.length)
+          return `<p class="sub">No rows match these filters.</p>`;
+        const total = data.reduce((a, d) => a + d.value, 0) || 1;
+        const cx = 118,
+          cy = 118,
+          r = 94,
+          ir = 58;
+        const cols = [C.navy, C.teal, C.sand, C.coral, C.sky, C.slate];
+        let ang = -Math.PI / 2,
+          paths = "";
+        data.forEach((d, i) => {
+          const a2 = ang + (d.value / total) * Math.PI * 2;
+          const large = a2 - ang > Math.PI ? 1 : 0;
+          const p = (rad, a) => [
+            cx + rad * Math.cos(a),
+            cy + rad * Math.sin(a),
+          ];
+          const [x1, y1] = p(r, ang),
+            [x2, y2] = p(r, a2),
+            [x3, y3] = p(ir, a2),
+            [x4, y4] = p(ir, ang);
+          const dim = active && active !== d.key ? " dim" : "";
+          const click = filterKey
+            ? `onclick="toggleFilter('${filterKey}','${esc(d.key)}')"`
+            : "";
+          paths += `<path class="mark${dim}" ${click} d="M${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${x3} ${y3} A${ir} ${ir} 0 ${large} 0 ${x4} ${y4} Z"
+      fill="${cols[i % cols.length]}"><title>${esc(d.key)}: ${fmt(d.value)} (${pct(d.value / total)})</title></path>`;
+          ang = a2;
+        });
+        const legend = data
+          .map(
+            (d, i) =>
+              `<span><i style="background:${cols[i % cols.length]}"></i>${esc(d.key)} · ${pct(d.value / total)}</span>`,
+          )
+          .join("");
+        return `<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+    <svg viewBox="0 0 236 236" style="max-width:200px" role="img">${paths}
+      <text x="118" y="113" text-anchor="middle" style="font-family:'Space Grotesk';font-size:19px;font-weight:700;fill:#0F2A47">${fmt(total)}</text>
+      <text x="118" y="132" text-anchor="middle" class="axis">total</text></svg>
+    <div class="legend" style="flex-direction:column;gap:7px">${legend}</div></div>`;
+      }
+
+      function scatter(rows) {
+        if (!rows.length)
+          return `<p class="sub">No rows match these filters.</p>`;
+        const W = 560,
+          H = 290,
+          pad = { t: 14, r: 16, b: 40, l: 48 };
+        const xs = rows.map((r) => r.purchases_per_year),
+          ys = rows.map((r) => r.purchase_amount);
+        const xmax = Math.max(...xs) || 1,
+          ymax = Math.max(...ys) || 1;
+        const iw = W - pad.l - pad.r,
+          ih = H - pad.t - pad.b;
+        const segs = [...new Set(rows.map((r) => r.segment))];
+        const colFor = (s) => (segs.indexOf(s) === 0 ? C.teal : C.coral);
+        const pts = rows
+          .map((r) => {
+            const x = pad.l + (r.purchases_per_year / xmax) * iw;
+            const y = pad.t + ih - (r.purchase_amount / ymax) * ih;
+            return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${colFor(r.segment)}" opacity=".5"/>`;
+          })
+          .join("");
+        const gridY = [0, 0.25, 0.5, 0.75, 1]
+          .map((t) => {
+            const y = pad.t + ih - t * ih;
+            return `<line class="gridline" x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}"/>
+      <text class="axis" x="${pad.l - 8}" y="${y + 3}" text-anchor="end">$${Math.round(ymax * t)}</text>`;
+          })
+          .join("");
+        const legend = segs
+          .map(
+            (s) =>
+              `<span><i style="background:${colFor(s)}"></i>${esc(s)}</span>`,
+          )
+          .join("");
+        return `<svg viewBox="0 0 ${W} ${H}" role="img">${gridY}${pts}
+    <text class="axis" x="${pad.l + iw / 2}" y="${H - 8}" text-anchor="middle">Purchases per year →</text></svg>
+    <div class="legend">${legend}</div>`;
+      }
+
+      /* =======================================================================
+   4. Pages
+   ======================================================================= */
+      const META = {
+        p1: [
+          "Executive summary",
+          "Where revenue comes from, and who creates it.",
+        ],
+        p2: [
+          "Customer segments",
+          "Two behavioural groups from K-Means - and what separates them.",
+        ],
+        p3: [
+          "Discounts &amp; subscriptions",
+          "Testing two commercial levers. Both come back null.",
+        ],
+        p4: [
+          "Product &amp; regional performance",
+          "Category, item and location detail, with data-quality flags.",
+        ],
+      };
+
+      function kpi(label, value, foot) {
+        return `<div class="card kpi"><div class="label">${label}</div>
+    <div class="value">${value}</div><div class="foot">${foot || ""}</div></div>`;
+      }
+
+      function pageSummary(rs) {
+        const cust = new Set(rs.map((r) => r.customer_id)).size;
+        const rev = sum(rs, "purchase_amount");
+        const sortedRev = rs
+          .map((r) => r.purchase_amount)
+          .sort((a, b) => b - a);
+        const topN = Math.ceil(sortedRev.length * 0.1);
+        const topShare = rev
+          ? sortedRev.slice(0, topN).reduce((a, b) => a + b, 0) / rev
+          : 0;
+        const subs = rs.filter(
+          (r) => r.is_subscriber === true || r.is_subscriber === "True",
+        ).length;
+
+        const byCat = sortDesc(
+          agg(rs, "category", (g) => sum(g, "purchase_amount")),
+        );
+        const byAge = sortBy(
+          agg(rs, "age_band", (g) => g).map((d) => ({
+            key: d.key,
+            aov: mean(d.value, "purchase_amount"),
+            eav: mean(d.value, "est_annual_value"),
+          })),
+          AGE_ORDER,
+        );
+        const bySeason = sortBy(
+          agg(rs, "season", (g) => sum(g, "purchase_amount")),
+          SEASON_ORDER,
+        );
+        const byLoc = sortDesc(
+          agg(rs, "location", (g) => sum(g, "purchase_amount")),
+        ).slice(0, 10);
+
+        return `
+  <div class="grid kpis">
+    ${kpi("Revenue", money(rev), num(rs.length) + " orders")}
+    ${kpi("Customers", num(cust), "one order each")}
+    ${kpi("Avg order value", money2(mean(rs, "purchase_amount")), "per order")}
+    ${kpi("Est. annual value", money(sum(rs, "est_annual_value")), "modelled")}
+    ${kpi("Subscriber rate", pct(cust ? subs / cust : 0), "of customers")}
+  </div>
+  <div class="grid cols-2" style="margin-bottom:14px">
+    <div class="card"><h3>Revenue by category</h3><p class="sub">Click a slice to filter the dashboard.</p>
+      ${donut(byCat, { filterKey: "category", active: F.category === "All" ? null : F.category })}</div>
+    <div class="card"><h3>Order value vs annual value, by age</h3>
+      <p class="sub">Order size is flat across ages. Annual value is not - cadence is doing the work.</p>
+      ${groupedBars(
+        byAge,
+        [
+          { key: "aov", label: "Avg order", color: C.sky },
+          { key: "eav", label: "Avg annual", color: C.navy },
+        ],
+        { fmt: money },
+      )}
+      <div class="legend"><span><i style="background:${C.sky}"></i>Avg order value</span>
+        <span><i style="background:${C.navy}"></i>Avg annual value</span></div></div>
+  </div>
+  <div class="grid cols-2">
+    <div class="card"><h3>Revenue by season</h3><p class="sub">Click a bar to filter.</p>
+      ${barChart(bySeason, { fmt: money, color: C.teal, filterKey: "season", active: F.season === "All" ? null : F.season })}</div>
+    <div class="card"><h3>Top 10 locations</h3>
+      <p class="sub">Top 10% of orders hold ${pct(topShare)} of revenue - no whale segment.</p>
+      ${hBar(byLoc, { fmt: money, color: C.navy })}</div>
+  </div>`;
+      }
+
+      function pageSegments(rs) {
+        const all = DATA;
+        const hi = all.filter((r) => r.segment === "High-value regulars");
+        const mid = all.filter((r) => r.segment === "Steady mid-tier");
+        const cad = mean(mid, "purchases_per_year")
+          ? mean(hi, "purchases_per_year") / mean(mid, "purchases_per_year")
+          : 0;
+        const aovM = mean(mid, "purchase_amount")
+          ? mean(hi, "purchase_amount") / mean(mid, "purchase_amount")
+          : 0;
+        const eavTotal = sum(all, "est_annual_value");
+        const hiShare = eavTotal ? sum(hi, "est_annual_value") / eavTotal : 0;
+        const cadPct = Math.min(100, (cad / Math.max(cad, aovM)) * 100);
+        const aovPct = Math.min(100, (aovM / Math.max(cad, aovM)) * 100);
+
+        const rows = [
+          ["High-value regulars", hi],
+          ["Steady mid-tier", mid],
+        ].filter(([, g]) => g.length);
+        const tbl = rows
+          .map(
+            ([name, g]) => `<tr>
+      <td>${name}</td>
+      <td class="num">${num(g.length)}</td>
+      <td class="num">${pct(g.length / all.length)}</td>
+      <td class="num">${money2(mean(g, "purchase_amount"))}</td>
+      <td class="num">${mean(g, "purchases_per_year").toFixed(1)}</td>
+      <td class="num">${money(mean(g, "est_annual_value"))}</td>
+      <td class="num">${pct(eavTotal ? sum(g, "est_annual_value") / eavTotal : 0)}</td></tr>`,
+          )
+          .join("");
+
+        const bySegAge = [];
+        groupBy(rs, "segment").forEach((g, seg) => {
+          groupBy(g, "age_band").forEach((g2, band) =>
+            bySegAge.push({ seg, band, g: g2 }),
+          );
+        });
+
+        return `
+  <div class="signature" style="margin-bottom:16px">
+    <div class="sig-stat"><div class="n hi">${cad.toFixed(1)}×</div>
+      <div class="k">Purchase frequency</div>
+      <div class="d">How much more often high-value customers buy than the mid-tier.</div>
+      <div class="sig-bar"><i style="width:${cadPct}%;background:${C.sand}"></i></div></div>
+    <div class="sig-stat"><div class="n lo">${aovM.toFixed(2)}×</div>
+      <div class="k">Order size</div>
+      <div class="d">How much more they spend per order. Almost nothing.</div>
+      <div class="sig-bar"><i style="width:${aovPct}%;background:${C.sky}"></i></div></div>
+  </div>
+  <div class="grid kpis">
+    ${kpi("High-value customers", num(hi.length), pct(hi.length / all.length) + " of base")}
+    ${kpi("Their share of annual value", pct(hiShare), "vs " + pct(hi.length / all.length) + " of customers")}
+    ${kpi("Cadence gap", cad.toFixed(1) + "×", "frequency multiple")}
+    ${kpi("Basket gap", aovM.toFixed(2) + "×", "order value multiple")}
+  </div>
+  <div class="grid cols-2" style="margin-bottom:14px">
+    <div class="card"><h3>Cadence vs order value</h3>
+      <p class="sub">Each dot is a customer. Separation runs horizontally - frequency - not vertically.</p>
+      ${scatter(rs)}</div>
+    <div class="card"><h3>Segment profile</h3><p class="sub">Full base, unfiltered.</p>
+      <table><thead><tr><th>Segment</th><th>Customers</th><th>% base</th><th>Avg order</th>
+        <th>Buys/yr</th><th>Avg annual</th><th>% value</th></tr></thead><tbody>${tbl}</tbody></table>
+      <p class="sub" style="margin-top:13px">Silhouette 0.286 - useful planning groupings, not sharply distinct populations.</p></div>
+  </div>
+  <div class="card"><h3>Average annual value by age band and segment</h3>
+    <p class="sub">The cadence gap holds across every age band.</p>
+    ${groupedBars(
+      AGE_ORDER.map((b) => ({
+        key: b,
+        hi: mean(
+          bySegAge
+            .filter((x) => x.band === b && x.seg === "High-value regulars")
+            .flatMap((x) => x.g),
+          "est_annual_value",
+        ),
+        mid: mean(
+          bySegAge
+            .filter((x) => x.band === b && x.seg === "Steady mid-tier")
+            .flatMap((x) => x.g),
+          "est_annual_value",
+        ),
+      })),
+      [
+        { key: "hi", label: "High-value", color: C.teal },
+        { key: "mid", label: "Mid-tier", color: C.sky },
+      ],
+      { fmt: money },
+    )}
+    <div class="legend"><span><i style="background:${C.teal}"></i>High-value regulars</span>
+      <span><i style="background:${C.sky}"></i>Steady mid-tier</span></div></div>`;
+      }
+
+      function splitStat(rs, flag, yes, no) {
+        const a = rs.filter((r) => r[flag] === true || r[flag] === "True");
+        const b = rs.filter((r) => !(r[flag] === true || r[flag] === "True"));
+        return [
+          {
+            key: yes,
+            aov: mean(a, "purchase_amount"),
+            eav: mean(a, "est_annual_value"),
+            n: a.length,
+          },
+          {
+            key: no,
+            aov: mean(b, "purchase_amount"),
+            eav: mean(b, "est_annual_value"),
+            n: b.length,
+          },
+        ];
+      }
+
+      function pageEngagement(rs) {
+        const disc = splitStat(
+          rs,
+          "received_discount",
+          "Discounted",
+          "Not discounted",
+        );
+        const subs = splitStat(
+          rs,
+          "is_subscriber",
+          "Subscriber",
+          "Non-subscriber",
+        );
+        const series = [
+          { key: "aov", label: "Avg order", color: C.sky },
+          { key: "eav", label: "Avg annual", color: C.navy },
+        ];
+        const tests = [
+          [
+            "Discounted vs not",
+            "Order value",
+            "60.00",
+            "60.00",
+            "0.26",
+            "−0.02",
+            "negligible",
+          ],
+          [
+            "Discounted vs not",
+            "Annual value",
+            "573.54",
+            "571.99",
+            "1.00",
+            "0.00",
+            "negligible",
+          ],
+          [
+            "Subscriber vs not",
+            "Order value",
+            "60.00",
+            "60.00",
+            "0.67",
+            "−0.01",
+            "negligible",
+          ],
+          [
+            "Subscriber vs not",
+            "Annual value",
+            "584.16",
+            "571.99",
+            "0.57",
+            "0.01",
+            "negligible",
+          ],
+          [
+            "Subscriber vs not",
+            "Prior purchases",
+            "26.00",
+            "25.00",
+            "0.05",
+            "0.04",
+            "negligible",
+          ],
+        ]
+          .map(
+            (
+              r,
+            ) => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td>
+    <td class="num">${r[4]}</td><td class="num">${r[5]}</td><td><span class="tag grey">${r[6]}</span></td></tr>`,
+          )
+          .join("");
+
+        return `
+  <div class="card" style="margin-bottom:14px"><div class="note">
+    <strong>How to read this page.</strong> The bars below look similar because they are.
+    Differences between these groups are not distinguishable from noise - every effect size is
+    negligible (Cliff's δ &lt; 0.05, Mann-Whitney U). Discount status is also moderately associated
+    with subscription status and gender (Cramér's V 0.70 and 0.60), so it can't be read as an
+    independent driver of spend. <strong>Recommendation: run a randomised holdout test before
+    scaling promotional spend.</strong>
+  </div></div>
+  <div class="grid cols-2" style="margin-bottom:14px">
+    <div class="card"><h3>Spend by discount status</h3>
+      <p class="sub">${num(disc[0].n)} discounted vs ${num(disc[1].n)} not.</p>
+      ${groupedBars(disc, series, { fmt: money })}
+      <div class="legend"><span><i style="background:${C.sky}"></i>Avg order value</span>
+        <span><i style="background:${C.navy}"></i>Avg annual value</span></div></div>
+    <div class="card"><h3>Spend by subscription status</h3>
+      <p class="sub">${num(subs[0].n)} subscribers vs ${num(subs[1].n)} not.</p>
+      ${groupedBars(subs, series, { fmt: money })}
+      <div class="legend"><span><i style="background:${C.sky}"></i>Avg order value</span>
+        <span><i style="background:${C.navy}"></i>Avg annual value</span></div></div>
+  </div>
+  <div class="card"><h3>Hypothesis tests</h3>
+    <p class="sub">Mann-Whitney U with Cliff's delta. Effect size decides the verdict, not the p-value.</p>
+    <table><thead><tr><th>Comparison</th><th>Metric</th><th>Median (yes)</th><th>Median (no)</th>
+      <th>p</th><th>Cliff's δ</th><th>Effect</th></tr></thead><tbody>${tests}</tbody></table></div>`;
+      }
+
+      function pageProduct(rs) {
+        const byItem = sortDesc(
+          agg(rs, "item_purchased", (g) => sum(g, "purchase_amount")),
+        ).slice(0, 12);
+        const byShip = sortDesc(
+          agg(rs, "shipping_type", (g) => sum(g, "purchase_amount")),
+        );
+        const byPay = sortDesc(agg(rs, "payment_method", (g) => g.length));
+        const imputed = rs.filter(
+          (r) =>
+            r.review_rating_imputed === true ||
+            r.review_rating_imputed === "True",
+        ).length;
+        const observed = rs.filter(
+          (r) =>
+            !(
+              r.review_rating_imputed === true ||
+              r.review_rating_imputed === "True"
+            ),
+        );
+        const catRows = sortDesc(
+          agg(rs, "category", (g) => sum(g, "purchase_amount")),
+        )
+          .map((d) => {
+            const g = rs.filter((r) => r.category === d.key);
+            return `<tr><td>${esc(d.key)}</td><td class="num">${num(d.n)}</td><td class="num">${money(d.value)}</td>
+      <td class="num">${pct(d.value / sum(rs, "purchase_amount"))}</td>
+      <td class="num">${money2(mean(g, "purchase_amount"))}</td>
+      <td class="num">${mean(g, "review_rating").toFixed(2)}</td></tr>`;
+          })
+          .join("");
+
+        return `
+  <div class="grid kpis">
+    ${kpi("Avg review rating", mean(rs, "review_rating").toFixed(2), "all rows")}
+    ${kpi("Observed only", mean(observed, "review_rating").toFixed(2), "imputed excluded")}
+    ${kpi("Imputed ratings", pct(rs.length ? imputed / rs.length : 0, 2), num(imputed) + " rows")}
+    ${kpi("Distinct items", num(new Set(rs.map((r) => r.item_purchased)).size), "in scope")}
+  </div>
+  <div class="grid cols-2" style="margin-bottom:14px">
+    <div class="card"><h3>Top items by revenue</h3><p class="sub">Revenue is spread thinly - no runaway hero product.</p>
+      ${hBar(byItem, { fmt: money, color: C.navy, rowH: 23 })}</div>
+    <div class="card"><h3>Category detail</h3><p class="sub">Ratings shown include imputed values.</p>
+      <table><thead><tr><th>Category</th><th>Orders</th><th>Revenue</th><th>Share</th>
+        <th>Avg order</th><th>Rating</th></tr></thead><tbody>${catRows}</tbody></table></div>
+  </div>
+  <div class="grid cols-2">
+    <div class="card"><h3>Revenue by shipping type</h3>${hBar(byShip, { fmt: money, color: C.teal })}</div>
+    <div class="card"><h3>Orders by payment method</h3>${hBar(byPay, { fmt: num, color: C.sand })}</div>
+  </div>`;
+      }
+
+      /* =======================================================================
+   5. Render + interaction
+   ======================================================================= */
+      function render() {
+        const rs = view();
+        document.getElementById("ptitle").innerHTML = META[PAGE][0];
+        document.getElementById("psub").innerHTML = META[PAGE][1];
+
+        const active = Object.entries(F)
+          .filter(([, v]) => v !== "All")
+          .map(([k, v]) => v);
+        document.getElementById("scope").textContent =
+          (active.length ? active.join(" · ") : "All customers") +
+          " - " +
+          num(rs.length) +
+          " of " +
+          num(DATA.length) +
+          " rows";
+
+        document.getElementById("p1").innerHTML =
+          PAGE === "p1" ? pageSummary(rs) : "";
+        document.getElementById("p2").innerHTML =
+          PAGE === "p2" ? pageSegments(rs) : "";
+        document.getElementById("p3").innerHTML =
+          PAGE === "p3" ? pageEngagement(rs) : "";
+        document.getElementById("p4").innerHTML =
+          PAGE === "p4" ? pageProduct(rs) : "";
+
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.toggle("active", p.id === PAGE));
+        document
+          .querySelectorAll("#nav button")
+          .forEach((b) =>
+            b.setAttribute("aria-current", String(b.dataset.page === PAGE)),
+          );
+      }
+
+      window.toggleFilter = function (key, val) {
+        F[key] = F[key] === val ? "All" : val;
+        syncSelects();
+        render();
+      };
+
+      function syncSelects() {
+        document.getElementById("f-cat").value = F.category;
+        document.getElementById("f-seg").value = F.segment;
+        document.getElementById("f-sea").value = F.season;
+        document.getElementById("f-age").value = F.age_band;
+      }
+
+      function fillSelect(id, key, order) {
+        const el = document.getElementById(id);
+        let vals = [...new Set(DATA.map((r) => r[key]))].filter(
+          (v) => v !== null && v !== undefined && String(v).trim() !== "",
+        );
+        if (!vals.length) {
+          el.parentElement.style.display = "none";
+          console.warn("No values found for filter column: " + key);
+          return;
+        }
+        vals = order
+          ? vals.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+          : vals.sort();
+        el.innerHTML =
+          `<option value="All">All</option>` +
+          vals
+            .map((v) => `<option value="${esc(v)}">${esc(v)}</option>`)
+            .join("");
+        el.onchange = () => {
+          F[key] = el.value;
+          render();
+        };
+      }
+
+      function init() {
+        fillSelect("f-cat", "category");
+        fillSelect("f-seg", "segment");
+        fillSelect("f-sea", "season", SEASON_ORDER);
+        fillSelect("f-age", "age_band", AGE_ORDER);
+        document.querySelectorAll("#nav button").forEach(
+          (b) =>
+            (b.onclick = () => {
+              PAGE = b.dataset.page;
+              render();
+            }),
+        );
+        document.getElementById("reset").onclick = () => {
+          Object.keys(F).forEach((k) => (F[k] = "All"));
+          syncSelects();
+          render();
+        };
+        render();
+      }
+    </script>
+  </body>
+</html>
