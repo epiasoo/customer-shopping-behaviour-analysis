@@ -4,7 +4,7 @@
 retail snapshot: data quality auditing and cleaning in Python, dimensional modelling and
 analytical querying in MySQL, and a browser-based dashboard built on the resulting star schema.
 
-**[→ Open the live dashboard](https://epiasoo.github.io/customer-shopping-behaviour-analysis/)**
+**[Open the live dashboard](https://epiasoo.github.io/customer-shopping-behaviour-analysis/)**
 
 <p align="center">
   <img src="reports/figures/dashboard_summary.png" width="880" alt="Executive summary page of the dashboard">
