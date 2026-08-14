@@ -1,0 +1,209 @@
+// =============================================================================
+// Customer Shopping Behaviour Analysis — DAX measure library
+// Model: star schema (fact_purchase + dim_customer, dim_item, dim_location)
+//
+// Create a blank table named "_Measures" first (Home > Enter Data > name it
+// _Measures > Load), then add each measure below to that table. This keeps
+// every measure in one folder in the Fields pane instead of scattered across
+// the fact and dimension tables.
+// =============================================================================
+
+
+// -----------------------------------------------------------------------------
+// 1. CORE VOLUME AND VALUE
+// -----------------------------------------------------------------------------
+
+Total Revenue =
+SUM ( fact_purchase[purchase_amount] )
+
+Total Orders =
+COUNTROWS ( fact_purchase )
+
+Total Customers =
+DISTINCTCOUNT ( fact_purchase[customer_id] )
+
+Avg Order Value =
+DIVIDE ( [Total Revenue], [Total Orders] )
+
+Est Annual Value =
+SUM ( fact_purchase[est_annual_value] )
+
+Avg Annual Value =
+DIVIDE ( [Est Annual Value], [Total Customers] )
+
+Avg Purchases Per Year =
+AVERAGE ( fact_purchase[purchases_per_year] )
+
+Avg Review Rating =
+AVERAGE ( fact_purchase[review_rating] )
+
+
+// -----------------------------------------------------------------------------
+// 2. ENGAGEMENT RATES
+// -----------------------------------------------------------------------------
+
+Subscriber Rate =
+DIVIDE (
+    CALCULATE ( [Total Customers], dim_customer[is_subscriber] = 1 ),
+    [Total Customers]
+)
+
+Discount Rate =
+DIVIDE (
+    CALCULATE ( [Total Orders], fact_purchase[received_discount] = 1 ),
+    [Total Orders]
+)
+
+Avg Prior Purchases =
+AVERAGE ( dim_customer[previous_purchases] )
+
+
+// -----------------------------------------------------------------------------
+// 3. SHARE AND CONCENTRATION
+// -----------------------------------------------------------------------------
+// ALLSELECTED respects slicers but ignores the visual's own row context, so
+// these read as "share of what the user is currently looking at".
+
+Revenue Share % =
+DIVIDE (
+    [Total Revenue],
+    CALCULATE ( [Total Revenue], ALLSELECTED ( fact_purchase ) )
+)
+
+Annual Value Share % =
+DIVIDE (
+    [Est Annual Value],
+    CALCULATE ( [Est Annual Value], ALLSELECTED ( fact_purchase ) )
+)
+
+Customer Share % =
+DIVIDE (
+    [Total Customers],
+    CALCULATE ( [Total Customers], ALLSELECTED ( fact_purchase ) )
+)
+
+// Revenue concentration: share of revenue held by the top 10% of customers.
+// Returned ~16% on this dataset — near-uniform, i.e. no "whale" segment.
+Top Decile Revenue % =
+VAR CustomerCount = [Total Customers]
+VAR DecileSize = ROUNDUP ( CustomerCount * 0.1, 0 )
+VAR TopCustomers =
+    TOPN (
+        DecileSize,
+        VALUES ( fact_purchase[customer_id] ),
+        [Total Revenue], DESC
+    )
+RETURN
+    DIVIDE (
+        CALCULATE ( [Total Revenue], KEEPFILTERS ( TopCustomers ) ),
+        [Total Revenue]
+    )
+
+
+// -----------------------------------------------------------------------------
+// 4. SEGMENT MEASURES
+// -----------------------------------------------------------------------------
+// The core finding of this project: value is driven by cadence, not basket size.
+// These quantify the gap so the dashboard states it rather than implying it.
+
+High Value Customers =
+CALCULATE (
+    [Total Customers],
+    dim_customer[segment] = "High-value regulars"
+)
+
+High Value Annual Share % =
+DIVIDE (
+    CALCULATE ( [Est Annual Value], dim_customer[segment] = "High-value regulars" ),
+    CALCULATE ( [Est Annual Value], ALL ( dim_customer[segment] ) )
+)
+
+// How many times more often the high-value segment buys, vs the mid-tier.
+Cadence Multiple =
+VAR HighCadence =
+    CALCULATE ( [Avg Purchases Per Year], dim_customer[segment] = "High-value regulars" )
+VAR MidCadence =
+    CALCULATE ( [Avg Purchases Per Year], dim_customer[segment] = "Steady mid-tier" )
+RETURN
+    DIVIDE ( HighCadence, MidCadence )
+
+// The same comparison on basket size. Contrast the two cards on the Segments
+// page: cadence separates the segments roughly four-fold, order value barely at all.
+Order Value Multiple =
+VAR HighAOV =
+    CALCULATE ( [Avg Order Value], dim_customer[segment] = "High-value regulars" )
+VAR MidAOV =
+    CALCULATE ( [Avg Order Value], dim_customer[segment] = "Steady mid-tier" )
+RETURN
+    DIVIDE ( HighAOV, MidAOV )
+
+
+// -----------------------------------------------------------------------------
+// 5. RANKING (for Top-N visuals and dynamic titles)
+// -----------------------------------------------------------------------------
+
+Item Revenue Rank =
+RANK ( DENSE, ALLSELECTED ( dim_item[item_purchased] ), ORDERBY ( [Total Revenue], DESC ) )
+
+Location Revenue Rank =
+RANK ( DENSE, ALLSELECTED ( dim_location[location] ), ORDERBY ( [Total Revenue], DESC ) )
+
+// If your Power BI version predates the RANK function, use RANKX instead:
+// Item Revenue Rank =
+// RANKX ( ALLSELECTED ( dim_item[item_purchased] ), [Total Revenue], , DESC, DENSE )
+
+
+// -----------------------------------------------------------------------------
+// 6. DATA QUALITY (transparency measures)
+// -----------------------------------------------------------------------------
+// Surfacing imputation on the dashboard is unusual and worth doing: it shows the
+// model is honest about which numbers are observed and which are filled.
+
+Imputed Ratings =
+CALCULATE ( [Total Orders], fact_purchase[review_rating_imputed] = 1 )
+
+Imputed Rating % =
+DIVIDE ( [Imputed Ratings], [Total Orders] )
+
+Avg Rating (Observed Only) =
+CALCULATE (
+    AVERAGE ( fact_purchase[review_rating] ),
+    fact_purchase[review_rating_imputed] = 0
+)
+
+
+// -----------------------------------------------------------------------------
+// 7. DYNAMIC TITLES AND NARRATIVE
+// -----------------------------------------------------------------------------
+// Bind these to a visual's Title > fx > Field value. Titles then describe what
+// the user filtered to, instead of sitting static above changing data.
+
+Title Revenue Overview =
+VAR SelectedCategories =
+    CONCATENATEX ( VALUES ( dim_item[category] ), dim_item[category], ", " )
+VAR Scope =
+    IF (
+        ISFILTERED ( dim_item[category] ),
+        SelectedCategories,
+        "all categories"
+    )
+RETURN
+    "Revenue overview — " & Scope & " ($" & FORMAT ( [Total Revenue], "#,0" ) & ")"
+
+Insight Cadence =
+"High-value customers buy "
+    & FORMAT ( [Cadence Multiple], "0.0" )
+    & "x more often, but spend only "
+    & FORMAT ( [Order Value Multiple], "0.00" )
+    & "x more per order."
+
+
+// -----------------------------------------------------------------------------
+// 8. FORMATTING REFERENCE
+// -----------------------------------------------------------------------------
+// Set these in Measure tools > Format after creating each measure:
+//   Total Revenue, Est Annual Value, Avg Annual Value  -> Currency, 0 dp
+//   Avg Order Value                                    -> Currency, 2 dp
+//   All "% " measures                                  -> Percentage, 1 dp
+//   Cadence Multiple, Order Value Multiple             -> Decimal, 1-2 dp
+//   Total Orders, Total Customers                      -> Whole number, comma separator
