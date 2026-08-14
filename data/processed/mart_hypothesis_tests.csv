@@ -1,0 +1,6 @@
+comparison,metric,n_true,n_false,median_true,median_false,p_value,cliffs_delta,effect,verdict
+Discounted vs not,purchase_amount,1677,2223,60.0,60.0,0.26068349989324613,-0.021,negligible,No detectable difference
+Discounted vs not,est_annual_value,1677,2223,573.54,571.99,0.9994613862234645,0.0,negligible,No detectable difference
+Subscriber vs not,purchase_amount,1053,2847,60.0,60.0,0.6656853966924723,-0.009,negligible,No detectable difference
+Subscriber vs not,est_annual_value,1053,2847,584.16,571.99,0.5725760562158498,0.012,negligible,No detectable difference
+Subscriber vs not,previous_purchases,1053,2847,26.0,25.0,0.05252329112817021,0.04,negligible,No detectable difference

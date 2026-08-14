@@ -1,0 +1,17 @@
+category,season,orders,revenue,avg_order_value,avg_rating
+Accessories,Fall,324,19874,61.34,3.75
+Accessories,Spring,301,17007,56.5,3.82
+Accessories,Summer,312,19028,60.99,3.77
+Accessories,Winter,303,18291,60.37,3.74
+Clothing,Fall,427,26220,61.41,3.71
+Clothing,Spring,454,27692,61.0,3.76
+Clothing,Summer,408,23078,56.56,3.68
+Clothing,Winter,448,27274,60.88,3.73
+Footwear,Fall,136,8665,63.71,3.84
+Footwear,Spring,163,9555,58.62,3.79
+Footwear,Summer,160,9393,58.71,3.74
+Footwear,Winter,140,8480,60.57,3.82
+Outerwear,Fall,88,5259,59.76,3.64
+Outerwear,Spring,81,4425,54.63,3.82
+Outerwear,Summer,75,4278,57.04,3.76
+Outerwear,Winter,80,4562,57.02,3.78
